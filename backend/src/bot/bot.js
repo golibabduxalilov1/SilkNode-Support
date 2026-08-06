@@ -20,13 +20,27 @@ const askPhoneText =
   "Quyidagi \"Raqamni ulashish\" tugmasini bosing — bu eng ishonchli usul, chunki Telegram bu raqam " +
   "haqiqatan sizning akkauntingizga tegishli ekanini o'zi tasdiqlaydi.";
 
-const miniAppKeyboard = Markup.keyboard([[Markup.button.webApp("Service Desk'ni ochish", config.miniAppUrl)]]).resize();
+/**
+ * Telegram Desktop ba'zan bir marta ochilgan Mini App'ning WebView'ini keshlab
+ * qo'yadi va keyingi safar tugma bosilganda eski (initData'siz) sahifani qayta
+ * ko'rsatadi. Har safar tugma yuborilganda URL'ga unique query parametr
+ * qo'shib, Telegram'ni har doim yangi WebView ochishga majburlaymiz.
+ */
+const withCacheBust = (url) => {
+  const u = new URL(url);
+  u.searchParams.set('ts', Date.now().toString());
+  return u.toString();
+};
+
+const miniAppKeyboard = () =>
+  Markup.keyboard([[Markup.button.webApp("Service Desk'ni ochish", withCacheBust(config.miniAppUrl))]]).resize();
 const phoneKeyboard = Markup.keyboard([[Markup.button.contactRequest("Raqamni ulashish")]])
   .resize()
   .oneTime();
 
 const adminWelcome = 'Administrator sifatida tanildingiz.\n\nAdmin panelni ochish uchun quyidagi tugmani bosing.';
-const adminKeyboard = Markup.keyboard([[Markup.button.webApp("Admin Panel'ni ochish", config.adminUrl)]]).resize();
+const adminKeyboard = () =>
+  Markup.keyboard([[Markup.button.webApp("Admin Panel'ni ochish", withCacheBust(config.adminUrl))]]).resize();
 
 /** Faqat config'dagi superadmin Telegram ID'siga tenglikni tekshiradi. */
 const isSuperadmin = (from) => String(from.id) === String(config.superadminTelegramId);
@@ -48,14 +62,14 @@ async function findOrCreateUser(from) {
 bot.start(async (ctx) => {
   if (isSuperadmin(ctx.from)) {
     await findOrCreateUser(ctx.from);
-    return ctx.reply(adminWelcome, adminKeyboard);
+    return ctx.reply(adminWelcome, adminKeyboard());
   }
 
   const user = await findOrCreateUser(ctx.from);
   if (!user.phone) {
     return ctx.reply(askPhoneText, phoneKeyboard);
   }
-  return ctx.reply(welcome, miniAppKeyboard);
+  return ctx.reply(welcome, miniAppKeyboard());
 });
 
 bot.help((ctx) => ctx.reply("Service Desk'ni ochish tugmasini bosing yoki /start buyrug'ini yuboring."));
@@ -77,7 +91,7 @@ bot.on('contact', async (ctx) => {
   await db.query('UPDATE users SET phone = $1 WHERE id = $2', [contact.phone_number, user.id]);
 
   await ctx.reply('Rahmat! Raqamingiz tasdiqlandi.', Markup.removeKeyboard());
-  return ctx.reply(welcome, miniAppKeyboard);
+  return ctx.reply(welcome, miniAppKeyboard());
 });
 
 // "Hal qilindi" holatida foydalanuvchiga yuborilgan Ha/Yo'q tasdiqlash tugmalari.
@@ -112,14 +126,14 @@ bot.on('callback_query', async (ctx) => {
 bot.on('message', async (ctx) => {
   if (isSuperadmin(ctx.from)) {
     await findOrCreateUser(ctx.from);
-    return ctx.reply(adminWelcome, adminKeyboard);
+    return ctx.reply(adminWelcome, adminKeyboard());
   }
 
   const user = await findOrCreateUser(ctx.from);
   if (!user.phone) {
     return ctx.reply(askPhoneText, phoneKeyboard);
   }
-  return ctx.reply("Murojaatlar Service Desk ilovasi orqali qabul qilinadi.", miniAppKeyboard);
+  return ctx.reply("Murojaatlar Service Desk ilovasi orqali qabul qilinadi.", miniAppKeyboard());
 });
 
 bot.launch().then(() => console.log('Telegram bot ishga tushdi'));

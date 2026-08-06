@@ -17,6 +17,13 @@ const DEV_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS =
 
 const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
 
+// Telegram Desktop ba'zan keshlangan WebView'ni ko'rsatadi va shu sababli
+// window.Telegram.WebApp mavjud bo'lsa ham initData bo'sh keladi. Bunday holatda
+// sahifani bir marta qayta yuklash ko'pincha yordam beradi. Cheksiz reload
+// tsiklidan qochish uchun sessionStorage flag orqali faqat bitta urinishga
+// ruxsat beramiz.
+const RELOAD_FLAG = 'tg-gate-reloaded';
+
 /**
  * Eng tashqi qatlamda ilova haqiqatan ham Telegram WebView ichida ochilganini
  * tekshiradi (window.Telegram.WebApp.initData mavjudligi orqali). Bu faqat
@@ -32,13 +39,26 @@ export default function TelegramGate({ children }) {
     (async () => {
       const tg = await waitForTg(TG_WAIT_MS);
       if (cancelled) return;
-      // VAQTINCHALIK DIAGNOSTIKA: Telegram ichida (masalan, Desktop client'da
-      // "Enable webview inspecting" yoqilgach, o'ng tugma > Inspect > Console)
-      // shu qatorni tekshirib, window.Telegram.WebApp umuman yaratilyaptimi va
-      // initData to'ldirilyaptimi — aniqlash mumkin. Muammo hal bo'lgach o'chirib
-      // tashlang.
-      console.info('[TelegramGate] tg mavjud:', !!tg, '| initData uzunligi:', tg?.initData?.length ?? 0, '| platform:', tg?.platform);
-      setState(tg?.initData ? 'ok' : 'blocked');
+      if (import.meta.env.DEV) {
+        console.info('[TelegramGate] tg mavjud:', !!tg, '| initData uzunligi:', tg?.initData?.length ?? 0, '| platform:', tg?.platform);
+      }
+
+      if (tg?.initData) {
+        sessionStorage.removeItem(RELOAD_FLAG);
+        setState('ok');
+        return;
+      }
+
+      // tg obyekti bor, lekin initData bo'sh — Telegram Desktop keshlangan WebView
+      // ko'rsatayotgan bo'lishi mumkin. Shu holatda bitta marta reload qilib
+      // ko'ramiz (sessionStorage flag cheksiz reload tsiklini oldini oladi).
+      if (tg && !sessionStorage.getItem(RELOAD_FLAG)) {
+        sessionStorage.setItem(RELOAD_FLAG, '1');
+        window.location.reload();
+        return;
+      }
+
+      setState('blocked');
     })();
     return () => { cancelled = true; };
   }, []);

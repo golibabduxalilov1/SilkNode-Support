@@ -38,7 +38,9 @@ export async function sendTelegramMessage(telegramId, text, ticketId, options = 
   if (!config.botToken || !telegramId) return;
   const keyboard = [...(options.buttons || [])];
   if (ticketId) {
-    keyboard.push([{ text: 'Murojaatni ochish', web_app: { url: `${config.miniAppUrl}?ticket=${ticketId}` } }]);
+    keyboard.push([
+      { text: 'Murojaatni ochish', web_app: { url: `${config.miniAppUrl}?ticket=${ticketId}&ts=${Date.now()}` } },
+    ]);
   }
   const body = {
     chat_id: telegramId,
