@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { waitForTg } from './telegram.js';
 
+// Telegram Mini App SDK ba'zi WebView muhitlarida (masalan, Telegram Desktop'ning
+// eski ichki brauzer dvigateli) window.Telegram.WebApp'ni sahifa yuklanishidan
+// bir necha yuz millisoniya kech yaratishi mumkin. Login oqimi (auth.jsx) xuddi
+// shu vaqtni kutadi — bu yerda ham shunga moslashtiramiz, aks holda bu tekshiruv
+// login ulgurmasdan turib "Telegram emas" deb noto'g'ri xulosa chiqarib qo'yishi mumkin.
+const TG_WAIT_MS = 3000;
+
 /**
  * Lokal test uchun mo'ljallangan bypass — faqat `vite dev` rejimida va
  * VITE_DEV_AUTH_BYPASS=1 aniq yoqilganda ishlaydi. Production build'da
@@ -23,8 +30,14 @@ export default function TelegramGate({ children }) {
     if (DEV_BYPASS) return;
     let cancelled = false;
     (async () => {
-      const tg = await waitForTg(1500);
+      const tg = await waitForTg(TG_WAIT_MS);
       if (cancelled) return;
+      // VAQTINCHALIK DIAGNOSTIKA: Telegram ichida (masalan, Desktop client'da
+      // "Enable webview inspecting" yoqilgach, o'ng tugma > Inspect > Console)
+      // shu qatorni tekshirib, window.Telegram.WebApp umuman yaratilyaptimi va
+      // initData to'ldirilyaptimi — aniqlash mumkin. Muammo hal bo'lgach o'chirib
+      // tashlang.
+      console.info('[TelegramGate] tg mavjud:', !!tg, '| initData uzunligi:', tg?.initData?.length ?? 0, '| platform:', tg?.platform);
       setState(tg?.initData ? 'ok' : 'blocked');
     })();
     return () => { cancelled = true; };
