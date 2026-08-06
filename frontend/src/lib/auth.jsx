@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api, tokenStore } from './api.js';
-import { tg } from './telegram.js';
+import { waitForTg } from './telegram.js';
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
@@ -13,6 +13,7 @@ export function AuthProvider({ scope, children }) {
 
   const loginWithTelegram = useCallback(async () => {
     try {
+      const tg = await waitForTg();
       const initData = tg?.initData;
       const payload = initData
         ? { initData }
