@@ -50,6 +50,11 @@ ticketsRouter.get('/', async (req, res, next) => {
 
 ticketsRouter.post('/', upload.array('files', 5), async (req, res, next) => {
   try {
+    if (!req.user.phone) {
+      return res.status(403).json({
+        error: "Murojaat yuborishdan oldin telefon raqamingizni tasdiqlang — buning uchun botga /start yuboring va raqamingizni ulashing",
+      });
+    }
     const { organization_id, title, category, priority = 'medium', description } = req.body || {};
     const errors = [];
     if (!organization_id) errors.push('Tashkilot tanlanmadi');

@@ -25,7 +25,9 @@ export async function api(path, { method = 'GET', body, form } = {}) {
 
   if (!res.ok) {
     if (res.status === 401) tokenStore.clear();
-    throw new Error(data?.error || `So'rov bajarilmadi (${res.status})`);
+    const err = new Error(data?.error || `So'rov bajarilmadi (${res.status})`);
+    err.status = res.status;
+    throw err;
   }
   return data;
 }

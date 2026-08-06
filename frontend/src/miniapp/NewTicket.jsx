@@ -6,11 +6,14 @@ import { CATEGORY, PRIORITY } from '../lib/format.js';
 import FilePicker from '../components/FilePicker.jsx';
 import { ErrorNote } from '../components/Ui.jsx';
 
+const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
+
 export default function NewTicket() {
   const navigate = useNavigate();
   const [orgs, setOrgs] = useState([]);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState('');
+  const [phoneNotConfirmed, setPhoneNotConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState({
     organization_id: '', title: '', category: 'erp', priority: 'medium', description: '',
@@ -30,6 +33,7 @@ export default function NewTicket() {
 
   async function submit() {
     setError('');
+    setPhoneNotConfirmed(false);
     if (!form.organization_id) return setError('Tashkilotni tanlang');
     if (form.title.trim().length < 3) return setError("Mavzuni to'liqroq yozing");
     if (form.description.trim().length < 5) return setError('Muammo tavsifini yozing');
@@ -43,7 +47,11 @@ export default function NewTicket() {
       haptic('medium');
       navigate(`/app/tickets/${ticket.id}`, { replace: true });
     } catch (err) {
-      setError(err.message);
+      if (err.status === 403) {
+        setPhoneNotConfirmed(true);
+      } else {
+        setError(err.message);
+      }
       setSending(false);
     }
   }
@@ -59,7 +67,26 @@ export default function NewTicket() {
       </header>
 
       <div className="stack">
-        <ErrorNote>{error}</ErrorNote>
+        {phoneNotConfirmed ? (
+          <div className="alert alert-error">
+            <p style={{ margin: 0 }}>
+              Telefon raqamingiz tasdiqlanmagan. Iltimos, botga qayting va /start orqali raqamingizni ulashing.
+            </p>
+            {BOT_USERNAME && (
+              <a
+                className="btn btn-block"
+                style={{ marginTop: 10 }}
+                href={`https://t.me/${BOT_USERNAME}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Botni ochish
+              </a>
+            )}
+          </div>
+        ) : (
+          <ErrorNote>{error}</ErrorNote>
+        )}
 
         <div className="field">
           <label htmlFor="org">Tashkilot</label>

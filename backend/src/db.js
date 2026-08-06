@@ -78,6 +78,9 @@ CREATE INDEX IF NOT EXISTS idx_tickets_author ON tickets(author_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_org    ON tickets(organization_id);
 CREATE INDEX IF NOT EXISTS idx_messages_tkt   ON messages(ticket_id);
 `);
+
+  // Eski bazalarda bu ustun yo'q bo'lishi mumkin — CREATE TABLE emas, ALTER orqali qo'shiladi.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;`);
 }
 
 export async function seedIfEmpty() {
