@@ -1,0 +1,67 @@
+/*
+  Swiss Modernism 2.0 — design tokens.
+  Every value here is the single source of truth for the system. Components
+  must reference these tokens (via Tailwind utilities or var(--token)) rather
+  than hard-coding hex values or one-off spacing.
+*/
+
+@theme {
+  /* -- Surfaces -------------------------------------------------------- */
+  --color-canvas: #ffffff;
+  --color-panel: #ffffff;
+  --color-sunken: #fafafa;
+  --color-veil: #f4f4f5;
+
+  /* -- Text -------------------------------------------------------------- */
+  --color-fg: #0a0a0a;
+  --color-fg-secondary: #3f3f46;
+  --color-fg-muted: #71717a;
+
+  /* -- Borders ------------------------------------------------------------ */
+  --color-border: #e4e4e7;
+  --color-border-strong: #d4d4d8;
+
+  /* -- Dark surfaces (hero / footer / inverted controls only) ------------ */
+  --color-dark: #0a0a0a;
+  --color-dark-hover: #27272a;
+
+  /* -- Accent (the only decorative color in the system) ------------------ */
+  --color-accent: #4f46e5;
+  --color-accent-hover: #4338ca;
+  --color-accent-dark: #3730a3;
+  --color-accent-tint: #eef2ff;
+
+  /* -- Semantic status colors — communicate state only, never decoration - */
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-error: #dc2626;
+  --color-info: #0369a1;
+
+  /* -- Type ---------------------------------------------------------------- */
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* -- Radius: sharp and restrained ---------------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  /* -- Motion: only these three durations, one easing curve ---------------- */
+  --ease-swiss: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+
+  /* -- Layout ---------------------------------------------------------------- */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+/* Focus ring recipe reused by every interactive primitive. */
+:root {
+  --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.16);
+  --error-ring: 0 0 0 3px rgba(220, 38, 38, 0.16);
+}

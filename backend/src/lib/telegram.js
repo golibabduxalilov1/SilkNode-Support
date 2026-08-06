@@ -6,6 +6,10 @@ import { config } from '../config.js';
  * Hujjat: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
  */
 export function parseInitData(initData) {
+  // BOT_TOKEN bo'sh bo'lsa, imzo pastda bo'sh maxfiy kalit bilan hisoblanadi —
+  // bu ochiq algoritm bo'lgani uchun har kim shu tarzda hash'ni soxtalashtira oladi.
+  if (!config.botToken) throw new Error('BOT_TOKEN sozlanmagan, initData tekshirib bo\'lmaydi');
+
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
   if (!hash) throw new Error('initData ichida hash topilmadi');
