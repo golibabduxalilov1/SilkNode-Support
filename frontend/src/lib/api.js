@@ -46,3 +46,20 @@ export async function downloadFile(attachment) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+/** Eksport (Excel va h.k.) endpointlarini token bilan yuklab, faylga saqlaydi. */
+export async function downloadBlob(path, filename) {
+  const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${tokenStore.get()}` } });
+  if (!res.ok) {
+    const isJson = (res.headers.get('content-type') || '').includes('application/json');
+    const data = isJson ? await res.json() : null;
+    throw new Error(data?.error || `Eksport bajarilmadi (${res.status})`);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

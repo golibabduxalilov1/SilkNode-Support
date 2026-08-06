@@ -27,30 +27,33 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS organizations (
-  id         SERIAL PRIMARY KEY,
-  name       TEXT NOT NULL UNIQUE,
-  is_active  BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  id             SERIAL PRIMARY KEY,
+  name           TEXT NOT NULL UNIQUE,
+  is_active      BOOLEAN NOT NULL DEFAULT true,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS tickets (
-  id                     SERIAL PRIMARY KEY,
-  number                 TEXT UNIQUE,
-  organization_id        INTEGER NOT NULL REFERENCES organizations(id),
-  title                  TEXT NOT NULL,
-  description            TEXT NOT NULL,
-  category               TEXT NOT NULL,
-  priority               TEXT NOT NULL DEFAULT 'medium',
-  status                 TEXT NOT NULL DEFAULT 'new',
-  author_id              INTEGER NOT NULL REFERENCES users(id),
-  assigned_to            INTEGER REFERENCES users(id),
-  first_response_at      TIMESTAMPTZ,
-  closed_at              TIMESTAMPTZ,
-  first_response_minutes INTEGER,
-  resolution_minutes     INTEGER,
-  last_message_at        TIMESTAMPTZ,
-  created_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                      SERIAL PRIMARY KEY,
+  number                  TEXT UNIQUE,
+  organization_id         INTEGER NOT NULL REFERENCES organizations(id),
+  title                   TEXT NOT NULL,
+  description             TEXT NOT NULL,
+  category                TEXT NOT NULL,
+  priority                TEXT NOT NULL DEFAULT 'medium',
+  status                  TEXT NOT NULL DEFAULT 'new',
+  author_id               INTEGER NOT NULL REFERENCES users(id),
+  assigned_to             INTEGER REFERENCES users(id),
+  first_response_at       TIMESTAMPTZ,
+  resolved_at             TIMESTAMPTZ,
+  closed_at               TIMESTAMPTZ,
+  first_response_minutes  INTEGER,
+  resolution_minutes      INTEGER,
+  waiting_on_user_minutes INTEGER,
+  net_work_minutes        INTEGER,
+  last_message_at         TIMESTAMPTZ,
+  created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at              TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS messages (
@@ -70,17 +73,50 @@ CREATE TABLE IF NOT EXISTS attachments (
   original_name TEXT NOT NULL,
   mime_type     TEXT,
   size_bytes    INTEGER,
+  uploaded_by   INTEGER REFERENCES users(id),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
-CREATE INDEX IF NOT EXISTS idx_tickets_author ON tickets(author_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_org    ON tickets(organization_id);
-CREATE INDEX IF NOT EXISTS idx_messages_tkt   ON messages(ticket_id);
+CREATE TABLE IF NOT EXISTS status_history (
+  id         SERIAL PRIMARY KEY,
+  ticket_id  INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  old_status TEXT,
+  new_status TEXT NOT NULL,
+  changed_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER REFERENCES users(id),
+  action      TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id   TEXT,
+  meta        JSONB,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tickets_status       ON tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_author        ON tickets(author_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_org           ON tickets(organization_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_assignee_status ON tickets(assigned_to, status);
+CREATE INDEX IF NOT EXISTS idx_tickets_created_at    ON tickets(created_at);
+CREATE INDEX IF NOT EXISTS idx_tickets_category      ON tickets(category);
+CREATE INDEX IF NOT EXISTS idx_tickets_priority      ON tickets(priority);
+CREATE INDEX IF NOT EXISTS idx_messages_tkt          ON messages(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_messages_tkt_created  ON messages(ticket_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_status_history_tkt    ON status_history(ticket_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity     ON audit_logs(entity_type, entity_id);
 `);
 
-  // Eski bazalarda bu ustun yo'q bo'lishi mumkin — CREATE TABLE emas, ALTER orqali qo'shiladi.
+  // Eski bazalarda bu ustunlar yo'q bo'lishi mumkin — CREATE TABLE emas, ALTER orqali qo'shiladi.
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;`);
+  await pool.query(`ALTER TABLE organizations ADD COLUMN IF NOT EXISTS contact_person TEXT;`);
+  await pool.query(`ALTER TABLE organizations ADD COLUMN IF NOT EXISTS contact_phone TEXT;`);
+  await pool.query(`ALTER TABLE tickets ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;`);
+  await pool.query(`ALTER TABLE tickets ADD COLUMN IF NOT EXISTS waiting_on_user_minutes INTEGER;`);
+  await pool.query(`ALTER TABLE tickets ADD COLUMN IF NOT EXISTS net_work_minutes INTEGER;`);
+  await pool.query(`ALTER TABLE attachments ADD COLUMN IF NOT EXISTS uploaded_by INTEGER REFERENCES users(id);`);
 }
 
 export async function seedIfEmpty() {

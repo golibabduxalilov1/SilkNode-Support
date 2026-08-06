@@ -3,7 +3,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { ErrorNote } from '../components/Ui.jsx';
 
 export default function Login() {
-  const { loginWithPassword } = useAuth();
+  const { loginWithPassword, error: authError } = useAuth();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,7 +23,7 @@ export default function Login() {
           <p className="muted" style={{ margin: '2px 0 0', fontSize: 14 }}>Texnik mutaxassislar paneli</p>
         </div>
 
-        <ErrorNote>{error}</ErrorNote>
+        <ErrorNote>{error || authError}</ErrorNote>
 
         <div className="field">
           <label htmlFor="u">Login</label>

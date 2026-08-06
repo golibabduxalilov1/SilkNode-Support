@@ -45,9 +45,10 @@ export default function TicketDetail() {
     setSending(false);
   }
 
-  async function closeTicket() {
+  async function confirmResolution(nextStatus) {
     try {
-      await api(`/tickets/${id}/status`, { method: 'PATCH', body: { status: 'closed' } });
+      await api(`/tickets/${id}/status`, { method: 'PATCH', body: { status: nextStatus } });
+      haptic();
       await load();
     } catch (err) { setError(err.message); }
   }
@@ -56,6 +57,7 @@ export default function TicketDetail() {
 
   const { ticket, messages, initialAttachments } = data;
   const isClosed = ticket.status === 'closed';
+  const isResolved = ticket.status === 'resolved';
 
   return (
     <>
@@ -107,6 +109,16 @@ export default function TicketDetail() {
 
       <ErrorNote>{error}</ErrorNote>
 
+      {isResolved && (
+        <div className="card" style={{ textAlign: 'center', marginBottom: 16 }}>
+          <p style={{ margin: '0 0 12px' }}>Mutaxassis muammoni hal qilingan deb belgiladi.<br />Muammo hal bo'ldimi?</p>
+          <div className="row" style={{ gap: 10 }}>
+            <button className="btn" style={{ flex: 1 }} onClick={() => confirmResolution('closed')}>Ha, hal bo'ldi</button>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => confirmResolution('in_progress')}>Yo'q, hal bo'lmadi</button>
+          </div>
+        </div>
+      )}
+
       {isClosed ? (
         <div className="card" style={{ textAlign: 'center', marginTop: 12 }}>
           <p className="muted" style={{ margin: 0 }}>Murojaat yopilgan. Muammo qaytalansa, yangi murojaat yuboring.</p>
@@ -118,12 +130,9 @@ export default function TicketDetail() {
             placeholder="Javob yozing yoki qo'shimcha ma'lumot bering"
           />
           <FilePicker files={files} onChange={setFiles} max={3} />
-          <div className="row" style={{ gap: 10 }}>
-            <button className="btn" style={{ flex: 1 }} onClick={send} disabled={sending}>
-              {sending ? 'Yuborilmoqda...' : 'Yuborish'}
-            </button>
-            <button className="btn btn-ghost" onClick={closeTicket}>Murojaatni yopish</button>
-          </div>
+          <button className="btn btn-block" onClick={send} disabled={sending}>
+            {sending ? 'Yuborilmoqda...' : 'Yuborish'}
+          </button>
         </div>
       )}
     </>

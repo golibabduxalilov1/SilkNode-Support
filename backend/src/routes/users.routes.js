@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { db } from '../db.js';
 import { requireAuth, requireStaff, requireAdmin } from '../middleware/auth.js';
 import { publicUser } from './auth.routes.js';
+import { writeAudit } from '../lib/audit.js';
 
 export const usersRouter = Router();
 usersRouter.use(requireAuth);
@@ -27,6 +28,7 @@ usersRouter.post('/staff', requireAdmin, async (req, res) => {
       'INSERT INTO users (fullname, username, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING *',
       [fullname, username, bcrypt.hashSync(password, 10), role === 'admin' ? 'admin' : 'agent']
     );
+    await writeAudit({ actor: req.user, action: 'user.created', entityType: 'user', entityId: rows[0].id, meta: { username, role: rows[0].role } });
     res.status(201).json(publicUser(rows[0]));
   } catch {
     res.status(409).json({ error: 'Bunday login band' });

@@ -30,17 +30,21 @@ export function parseInitData(initData) {
   return JSON.parse(params.get('user') || '{}');
 }
 
-export async function sendTelegramMessage(telegramId, text, ticketId) {
+/**
+ * @param {object} [options]
+ * @param {Array<Array<{text:string, callback_data:string}>>} [options.buttons] - "Ko'rish" tugmasidan oldin qo'shiladigan qo'shimcha tugma qatorlari (masalan, Ha/Yo'q tasdiqlash)
+ */
+export async function sendTelegramMessage(telegramId, text, ticketId, options = {}) {
   if (!config.botToken || !telegramId) return;
+  const keyboard = [...(options.buttons || [])];
+  if (ticketId) {
+    keyboard.push([{ text: 'Murojaatni ochish', web_app: { url: `${config.miniAppUrl}?ticket=${ticketId}` } }]);
+  }
   const body = {
     chat_id: telegramId,
     text,
     parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: 'Murojaatni ochish', web_app: { url: `${config.miniAppUrl}?ticket=${ticketId}` } }],
-      ],
-    },
+    ...(keyboard.length ? { reply_markup: { inline_keyboard: keyboard } } : {}),
   };
   try {
     await fetch(`https://api.telegram.org/bot${config.botToken}/sendMessage`, {

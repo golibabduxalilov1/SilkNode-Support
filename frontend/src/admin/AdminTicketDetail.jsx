@@ -133,6 +133,11 @@ export default function AdminTicketDetail() {
             <h3>Vaqt ko'rsatkichlari</h3>
             <div className="kv"><span>Birinchi javobgacha</span><span>{formatMinutes(ticket.first_response_minutes)}</span></div>
             <div className="kv"><span>Umumiy bajarish</span><span>{formatMinutes(ticket.resolution_minutes)}</span></div>
+            <div className="kv"><span>Foydalanuvchini kutish</span><span>{formatMinutes(ticket.waiting_on_user_minutes)}</span></div>
+            <div className="kv"><span>Sof ishlash vaqti</span><span>{formatMinutes(ticket.net_work_minutes)}</span></div>
+            <p className="faint" style={{ marginTop: 10, marginBottom: 0, fontSize: 12.5 }}>
+              Vaqt taqvim (24/7) asosida hisoblanadi — ish vaqti (business hours) bo'yicha hisoblash kelajakdagi SLA modulida qo'shiladi.
+            </p>
           </div>
         </div>
       </div>

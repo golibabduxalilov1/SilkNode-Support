@@ -12,6 +12,7 @@ import Dashboard from './admin/Dashboard.jsx';
 import TicketsList from './admin/TicketsList.jsx';
 import AdminTicketDetail from './admin/AdminTicketDetail.jsx';
 import Organizations from './admin/Organizations.jsx';
+import Analytics from './admin/Analytics.jsx';
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="tickets" element={<TicketsList />} />
         <Route path="tickets/:id" element={<AdminTicketDetail />} />
         <Route path="organizations" element={<Organizations />} />
+        <Route path="analytics" element={<Analytics />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/app" replace />} />

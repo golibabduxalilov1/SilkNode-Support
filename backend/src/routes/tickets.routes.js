@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { db } from '../db.js';
-import { CATEGORIES, PRIORITIES, STATUSES } from '../config.js';
+import { CATEGORIES, PRIORITIES, STATUSES, config } from '../config.js';
 import { requireAuth, requireStaff, isStaff } from '../middleware/auth.js';
-import { upload } from '../middleware/upload.js';
+import { upload, verifyUploadedFiles } from '../middleware/upload.js';
+import { exportTicketsXlsx } from '../services/analytics.service.js';
 import {
-  createTicket, listTickets, getTicketById, getTicketThread,
+  createTicket, listTickets, listTicketsForExport, getTicketById, getTicketThread,
   addMessage, changeStatus, assignTicket,
 } from '../services/tickets.service.js';
 
@@ -48,7 +49,7 @@ ticketsRouter.get('/', async (req, res, next) => {
   }
 });
 
-ticketsRouter.post('/', upload.array('files', 5), async (req, res, next) => {
+ticketsRouter.post('/', upload.array('files', config.maxFilesPerTicket), verifyUploadedFiles, async (req, res, next) => {
   try {
     if (!req.user.phone) {
       return res.status(403).json({
@@ -89,7 +90,7 @@ ticketsRouter.get('/:id', loadTicket, async (req, res, next) => {
   }
 });
 
-ticketsRouter.post('/:id/messages', loadTicket, upload.array('files', 5), async (req, res, next) => {
+ticketsRouter.post('/:id/messages', loadTicket, upload.array('files', config.maxFilesPerTicket), verifyUploadedFiles, async (req, res, next) => {
   try {
     const text = (req.body?.message || '').trim();
     if (!text && !(req.files || []).length) return res.status(400).json({ error: 'Xabar yoki fayl yuboring' });
@@ -107,8 +108,11 @@ ticketsRouter.patch('/:id/status', loadTicket, async (req, res, next) => {
   try {
     const { status } = req.body || {};
     if (!STATUSES.includes(status)) return res.status(400).json({ error: 'Status notogri' });
-    // Foydalanuvchi faqat o'z murojaatini yopa oladi
-    if (!isStaff(req.user) && status !== 'closed') return res.status(403).json({ error: 'Ruxsat yetarli emas' });
+    // Foydalanuvchi faqat "Hal qilindi" holatidan tasdiqlash (Yopildi) yoki rad etish (Ish jarayonida) orqali o'ta oladi
+    if (!isStaff(req.user)) {
+      const allowed = req.ticket.status === 'resolved' && (status === 'closed' || status === 'in_progress');
+      if (!allowed) return res.status(403).json({ error: 'Ruxsat yetarli emas' });
+    }
     res.json(await changeStatus({ ticket: req.ticket, status, actor: req.user }));
   } catch (err) {
     next(err);
@@ -126,4 +130,25 @@ ticketsRouter.patch('/:id/assign', loadTicket, requireStaff, async (req, res, ne
 
 ticketsRouter.get('/meta/dictionaries', (_req, res) => {
   res.json({ categories: CATEGORIES, priorities: PRIORITIES, statuses: STATUSES });
+});
+
+/** TZ 7.2: tiketlar jadvalini joriy filtrlar bilan Excel formatda eksport qilish. */
+ticketsRouter.get('/export/xlsx', requireStaff, async (req, res, next) => {
+  try {
+    const items = await listTicketsForExport({
+      user: req.user,
+      status: req.query.status,
+      organizationId: req.query.organization_id,
+      category: req.query.category,
+      priority: req.query.priority,
+      assignedTo: req.query.assigned_to,
+      q: req.query.q,
+    });
+    const buffer = await exportTicketsXlsx(items);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="tickets-export.xlsx"');
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
 });

@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import { config } from '../config.js';
 import { db } from '../db.js';
+import { changeStatus, getTicketById } from '../services/tickets.service.js';
 
 if (!config.botToken) {
   console.error('BOT_TOKEN .env faylida korsatilmagan');
@@ -24,6 +25,12 @@ const phoneKeyboard = Markup.keyboard([[Markup.button.contactRequest("Raqamni ul
   .resize()
   .oneTime();
 
+const adminWelcome = 'Administrator sifatida tanildingiz.\n\nAdmin panelni ochish uchun quyidagi tugmani bosing.';
+const adminKeyboard = Markup.keyboard([[Markup.button.webApp("Admin Panel'ni ochish", config.adminUrl)]]).resize();
+
+/** Faqat config'dagi superadmin Telegram ID'siga tenglikni tekshiradi. */
+const isSuperadmin = (from) => String(from.id) === String(config.superadminTelegramId);
+
 /** telegram_id bo'yicha foydalanuvchini topadi, topilmasa yangi qator yaratadi. */
 async function findOrCreateUser(from) {
   const telegramId = String(from.id);
@@ -39,6 +46,11 @@ async function findOrCreateUser(from) {
 }
 
 bot.start(async (ctx) => {
+  if (isSuperadmin(ctx.from)) {
+    await findOrCreateUser(ctx.from);
+    return ctx.reply(adminWelcome, adminKeyboard);
+  }
+
   const user = await findOrCreateUser(ctx.from);
   if (!user.phone) {
     return ctx.reply(askPhoneText, phoneKeyboard);
@@ -68,7 +80,41 @@ bot.on('contact', async (ctx) => {
   return ctx.reply(welcome, miniAppKeyboard);
 });
 
+// "Hal qilindi" holatida foydalanuvchiga yuborilgan Ha/Yo'q tasdiqlash tugmalari.
+bot.on('callback_query', async (ctx) => {
+  const data = ctx.callbackQuery?.data || '';
+  const match = /^confirm:(\d+):(yes|no)$/.exec(data);
+  if (!match) return ctx.answerCbQuery();
+
+  const [, ticketIdRaw, answer] = match;
+  try {
+    const ticket = await getTicketById(Number(ticketIdRaw));
+    if (!ticket) return ctx.answerCbQuery('Murojaat topilmadi', { show_alert: true });
+
+    const user = await findOrCreateUser(ctx.from);
+    if (ticket.author_id !== user.id) {
+      return ctx.answerCbQuery('Bu tugma sizga tegishli emas', { show_alert: true });
+    }
+    if (ticket.status !== 'resolved') {
+      return ctx.answerCbQuery('Bu murojaat allaqachon boshqa holatda', { show_alert: true });
+    }
+
+    const nextStatus = answer === 'yes' ? 'closed' : 'in_progress';
+    await changeStatus({ ticket, status: nextStatus, actor: user });
+    await ctx.answerCbQuery(answer === 'yes' ? 'Rahmat! Murojaat yopildi.' : 'Tushunarli, mutaxassis davom etadi.');
+    await ctx.editMessageReplyMarkup(undefined).catch(() => {});
+  } catch (err) {
+    console.error('[bot] callback_query xatosi:', err.message);
+    await ctx.answerCbQuery('Xatolik yuz berdi', { show_alert: true });
+  }
+});
+
 bot.on('message', async (ctx) => {
+  if (isSuperadmin(ctx.from)) {
+    await findOrCreateUser(ctx.from);
+    return ctx.reply(adminWelcome, adminKeyboard);
+  }
+
   const user = await findOrCreateUser(ctx.from);
   if (!user.phone) {
     return ctx.reply(askPhoneText, phoneKeyboard);

@@ -32,6 +32,7 @@ export default function AdminLayout() {
         <nav>
           <NavLink to="/admin" end>Dashboard</NavLink>
           <NavLink to="/admin/tickets">Murojaatlar</NavLink>
+          <NavLink to="/admin/analytics">Analytics</NavLink>
           <NavLink to="/admin/organizations">Tashkilotlar</NavLink>
         </nav>
         <div className="who">
