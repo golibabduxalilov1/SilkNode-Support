@@ -41,20 +41,6 @@ export function requireStaff(req, res, next) {
   next();
 }
 
-// Xodimlar/administrator uchun telefon tasdiqlash talab qilinmaydi — bu cheklov
-// faqat oddiy foydalanuvchilarga tegishli (bot orqali "Raqamni ulashish" bilan tasdiqlanadi).
-export const isPhoneVerified = (user) => isStaff(user) || !!user.phone;
-
-export function requirePhoneVerified(req, res, next) {
-  if (!isPhoneVerified(req.user)) {
-    return res.status(403).json({
-      error: "Telefon raqamingizni tasdiqlang — buning uchun botga /start yuboring va \"Raqamni ulashish\" tugmasidan foydalaning",
-      code: 'PHONE_NOT_VERIFIED',
-    });
-  }
-  next();
-}
-
 export function requireAdmin(req, res, next) {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Faqat administrator uchun' });
   next();

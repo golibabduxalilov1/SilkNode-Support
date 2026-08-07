@@ -39,34 +39,6 @@ export function AuthProvider({ scope, children }) {
     }
   }, []);
 
-  /**
-   * Admin panel Telegram Mini App sifatida ochilganda (haqiqiy initData mavjud bo'lganda)
-   * login formasini o'tkazib yuborib, avtomatik kirishga urinadi. Rol tekshiruvi (admin/agent)
-   * har doim backend javobidagi user.role asosida bo'ladi — frontend hech qanday ID'ga tayanmaydi.
-   */
-  const loginWithTelegramAdmin = useCallback(async () => {
-    const tg = await waitForTg();
-    const initData = tg?.initData;
-    if (!initData) {
-      setStatus('anonymous');
-      return;
-    }
-    try {
-      const { token, user: u } = await api('/auth/telegram', { method: 'POST', body: { initData } });
-      if (u.role !== 'admin' && u.role !== 'agent') {
-        setError("Sizda admin panelga kirish huquqi yo'q.");
-        setStatus('anonymous');
-        return;
-      }
-      tokenStore.set(token);
-      setUser(u);
-      setStatus('ready');
-    } catch (err) {
-      setError(err.message);
-      setStatus('anonymous');
-    }
-  }, []);
-
   const loginWithPassword = useCallback(async (username, password) => {
     const { token, user: u } = await api('/auth/login', { method: 'POST', body: { username, password } });
     tokenStore.set(token);
@@ -93,11 +65,10 @@ export function AuthProvider({ scope, children }) {
       }
       if (cancelled) return;
       if (scope === 'app') await loginWithTelegram();
-      else if (scope === 'admin') await loginWithTelegramAdmin();
       else setStatus('anonymous');
     })();
     return () => { cancelled = true; };
-  }, [scope, loginWithTelegram, loginWithTelegramAdmin]);
+  }, [scope, loginWithTelegram]);
 
   return (
     <AuthContext.Provider value={{ user, status, error, loginWithPassword, loginWithTelegram, logout }}>

@@ -15,11 +15,6 @@ const welcome =
   'Texnik yordam so\'rash uchun quyidagi tugma orqali Service Desk\'ni oching. ' +
   'Murojaatingizga javob kelganda shu chatga bildirishnoma yuboriladi.';
 
-const askPhoneText =
-  "Davom etishdan oldin telefon raqamingizni tasdiqlang.\n\n" +
-  "Quyidagi \"Raqamni ulashish\" tugmasini bosing — bu eng ishonchli usul, chunki Telegram bu raqam " +
-  "haqiqatan sizning akkauntingizga tegishli ekanini o'zi tasdiqlaydi.";
-
 /**
  * Telegram Desktop ba'zan bir marta ochilgan Mini App'ning WebView'ini keshlab
  * qo'yadi va keyingi safar tugma bosilganda eski (initData'siz) sahifani qayta
@@ -34,16 +29,6 @@ const withCacheBust = (url) => {
 
 const miniAppKeyboard = () =>
   Markup.keyboard([[Markup.button.webApp("Service Desk'ni ochish", withCacheBust(config.miniAppUrl))]]).resize();
-const phoneKeyboard = Markup.keyboard([[Markup.button.contactRequest("Raqamni ulashish")]])
-  .resize()
-  .oneTime();
-
-const adminWelcome = 'Administrator sifatida tanildingiz.\n\nAdmin panelni ochish uchun quyidagi tugmani bosing.';
-const adminKeyboard = () =>
-  Markup.keyboard([[Markup.button.webApp("Admin Panel'ni ochish", withCacheBust(config.adminUrl))]]).resize();
-
-/** Faqat config'dagi superadmin Telegram ID'siga tenglikni tekshiradi. */
-const isSuperadmin = (from) => String(from.id) === String(config.superadminTelegramId);
 
 /** telegram_id bo'yicha foydalanuvchini topadi, topilmasa yangi qator yaratadi. */
 async function findOrCreateUser(from) {
@@ -60,39 +45,11 @@ async function findOrCreateUser(from) {
 }
 
 bot.start(async (ctx) => {
-  if (isSuperadmin(ctx.from)) {
-    await findOrCreateUser(ctx.from);
-    return ctx.reply(adminWelcome, adminKeyboard());
-  }
-
-  const user = await findOrCreateUser(ctx.from);
-  if (!user.phone) {
-    return ctx.reply(askPhoneText, phoneKeyboard);
-  }
+  await findOrCreateUser(ctx.from);
   return ctx.reply(welcome, miniAppKeyboard());
 });
 
 bot.help((ctx) => ctx.reply("Service Desk'ni ochish tugmasini bosing yoki /start buyrug'ini yuboring."));
-
-// Generic 'message' handlerdan oldin ro'yxatdan o'tishi shart, aks holda contact
-// xabarlari o'sha umumiy handlerda "yutilib" ketadi va bu yerga yetib kelmaydi.
-bot.on('contact', async (ctx) => {
-  const contact = ctx.message.contact;
-
-  // Foydalanuvchi boshqa birovning kontaktini yuborib, uni o'ziniki qilib ko'rsatishi mumkin emas.
-  if (String(contact.user_id) !== String(ctx.from.id)) {
-    return ctx.reply(
-      "Faqat o'zingizning telefon raqamingizni yuborishingiz mumkin. Iltimos, \"Raqamni ulashish\" tugmasidan foydalaning.",
-      phoneKeyboard
-    );
-  }
-
-  const user = await findOrCreateUser(ctx.from);
-  await db.query('UPDATE users SET phone = $1 WHERE id = $2', [contact.phone_number, user.id]);
-
-  await ctx.reply('Rahmat! Raqamingiz tasdiqlandi.', Markup.removeKeyboard());
-  return ctx.reply(welcome, miniAppKeyboard());
-});
 
 // "Hal qilindi" holatida foydalanuvchiga yuborilgan Ha/Yo'q tasdiqlash tugmalari.
 bot.on('callback_query', async (ctx) => {
@@ -124,15 +81,7 @@ bot.on('callback_query', async (ctx) => {
 });
 
 bot.on('message', async (ctx) => {
-  if (isSuperadmin(ctx.from)) {
-    await findOrCreateUser(ctx.from);
-    return ctx.reply(adminWelcome, adminKeyboard());
-  }
-
-  const user = await findOrCreateUser(ctx.from);
-  if (!user.phone) {
-    return ctx.reply(askPhoneText, phoneKeyboard);
-  }
+  await findOrCreateUser(ctx.from);
   return ctx.reply("Murojaatlar Service Desk ilovasi orqali qabul qilinadi.", miniAppKeyboard());
 });
 

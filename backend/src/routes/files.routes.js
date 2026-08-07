@@ -2,11 +2,10 @@ import { Router } from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
 import { db } from '../db.js';
-import { requireAuth, requirePhoneVerified, isStaff } from '../middleware/auth.js';
+import { requireAuth, isStaff } from '../middleware/auth.js';
 
 export const filesRouter = Router();
 filesRouter.use(requireAuth);
-filesRouter.use(requirePhoneVerified);
 
 filesRouter.get('/:id', async (req, res, next) => {
   try {

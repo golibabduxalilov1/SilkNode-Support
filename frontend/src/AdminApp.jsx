@@ -9,7 +9,7 @@ import Organizations from './admin/Organizations.jsx';
 import Analytics from './admin/Analytics.jsx';
 import Staff from './admin/Staff.jsx';
 
-/** admin.support.silknode.uz — Admin Panel, bot orqali ham ochiladi, bosh manzilda (/) ishlaydi. */
+/** admin.support.silknode.uz — Admin Panel, faqat login/parol orqali kiriladi, bosh manzilda (/) ishlaydi. */
 export default function AdminApp() {
   return (
     <AuthProvider scope="admin">

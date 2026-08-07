@@ -7,14 +7,11 @@ import FilePicker from '../components/FilePicker.jsx';
 import { ErrorNote } from '../components/Ui.jsx';
 import { Field, Input, Select, TextArea, Button } from '../components/ui/index.js';
 
-const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
-
 export default function NewTicket() {
   const navigate = useNavigate();
   const [orgs, setOrgs] = useState([]);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState('');
-  const [phoneNotConfirmed, setPhoneNotConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState({
     organization_id: '', title: '', category: 'erp', priority: 'medium', description: '',
@@ -34,7 +31,6 @@ export default function NewTicket() {
 
   async function submit() {
     setError('');
-    setPhoneNotConfirmed(false);
     if (!form.organization_id) return setError('Tashkilotni tanlang');
     if (form.title.trim().length < 3) return setError("Mavzuni to'liqroq yozing");
     if (form.description.trim().length < 5) return setError('Muammo tavsifini yozing');
@@ -48,11 +44,7 @@ export default function NewTicket() {
       haptic('medium');
       navigate(`/tickets/${ticket.id}`, { replace: true });
     } catch (err) {
-      if (err.status === 403) {
-        setPhoneNotConfirmed(true);
-      } else {
-        setError(err.message);
-      }
+      setError(err.message);
       setSending(false);
     }
   }
@@ -68,25 +60,7 @@ export default function NewTicket() {
       </header>
 
       <div className="stack">
-        {phoneNotConfirmed ? (
-          <div className="alert alert-error">
-            <p style={{ margin: 0 }}>
-              Telefon raqamingiz tasdiqlanmagan. Iltimos, botga qayting va /start orqali raqamingizni ulashing.
-            </p>
-            {BOT_USERNAME && (
-              <Button
-                as="a" fullWidth style={{ marginTop: 10, textDecoration: 'none' }}
-                href={`https://t.me/${BOT_USERNAME}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Botni ochish
-              </Button>
-            )}
-          </div>
-        ) : (
-          <ErrorNote>{error}</ErrorNote>
-        )}
+        <ErrorNote>{error}</ErrorNote>
 
         <Field label="Tashkilot" htmlFor="org">
           <Select id="org" value={form.organization_id} onChange={set('organization_id')}>
