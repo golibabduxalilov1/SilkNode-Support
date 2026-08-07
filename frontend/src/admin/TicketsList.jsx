@@ -125,7 +125,7 @@ export default function TicketsList() {
               </thead>
               <tbody>
                 {data.items.map((t) => (
-                  <tr key={t.id} onClick={() => navigate(`/admin/tickets/${t.id}`)}>
+                  <tr key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
                     <td className="mono-num">{t.number}</td>
                     <td>{t.organization_name}</td>
                     <td>{t.author_name}</td>

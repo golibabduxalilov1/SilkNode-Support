@@ -15,8 +15,6 @@ const TG_WAIT_MS = 3000;
  */
 const DEV_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
 
-const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
-
 // Telegram Desktop ba'zan keshlangan WebView'ni ko'rsatadi va shu sababli
 // window.Telegram.WebApp mavjud bo'lsa ham initData bo'sh keladi. Bunday holatda
 // sahifani bir marta qayta yuklash ko'pincha yordam beradi. Cheksiz reload
@@ -58,31 +56,15 @@ export default function TelegramGate({ children }) {
         return;
       }
 
-      setState('blocked');
+      // initData baribir topilmadi, lekin bu faqat kosmetik tekshiruv edi —
+      // haqiqiy tasdiqlash backend'da initData HMAC imzosi orqali amalga oshadi,
+      // shuning uchun bu yerda ilovani bloklamaymiz.
+      setState('ok');
     })();
     return () => { cancelled = true; };
   }, []);
 
   if (state === 'checking') return null;
-
-  if (state === 'blocked') {
-    return (
-      <div className="tg-block">
-        <div className="tg-block-card">
-          <h1>Faqat Telegram orqali ochiladi</h1>
-          <p className="muted">
-            Bu ilova Telegram Mini App sifatida ishlaydi va brauzerdan to'g'ridan-to'g'ri ochilmaydi.
-            Davom etish uchun Telegram ilovasidagi botdan foydalaning.
-          </p>
-          {BOT_USERNAME && (
-            <a className="btn btn-block" href={`https://t.me/${BOT_USERNAME}`}>
-              Botni Telegram'da ochish
-            </a>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return children;
 }

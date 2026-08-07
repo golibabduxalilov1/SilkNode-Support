@@ -29,7 +29,7 @@ export default function Home() {
       </header>
 
       <div className="stack">
-        <button className="tile" onClick={() => go('/app/new')}>
+        <button className="tile" onClick={() => go('/new')}>
           <span>
             <strong>Yangi murojaat</strong>
             <div className="faint">Muammoni tavsiflang va fayl biriktiring</div>
@@ -37,7 +37,7 @@ export default function Home() {
           <span className="arrow" aria-hidden>&rarr;</span>
         </button>
 
-        <button className="tile" onClick={() => go('/app/tickets')}>
+        <button className="tile" onClick={() => go('/tickets')}>
           <span>
             <strong>Mening murojaatlarim</strong>
             <div className="faint">Holat, javoblar va suhbat tarixi</div>
@@ -51,7 +51,7 @@ export default function Home() {
           <h2 style={{ fontSize: 15, margin: '24px 0 10px', color: 'var(--ink-soft)' }}>Oxirgi murojaatlar</h2>
           <div className="stack">
             {recent.map((t) => (
-              <button key={t.id} className="ticket-card" style={{ textAlign: 'left' }} onClick={() => go(`/app/tickets/${t.id}`)}>
+              <button key={t.id} className="ticket-card" style={{ textAlign: 'left' }} onClick={() => go(`/tickets/${t.id}`)}>
                 <div className="row-between">
                   <span className="mono-num faint">{t.number}</span>
                   <StatusBadge status={t.status} />

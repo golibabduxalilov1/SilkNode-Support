@@ -16,7 +16,7 @@ export default function TicketDetail() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
 
-  useEffect(() => backButton(() => navigate('/app/tickets')), [navigate]);
+  useEffect(() => backButton(() => navigate('/tickets')), [navigate]);
 
   const load = useCallback(async () => {
     try { setData(await api(`/tickets/${id}`)); }

@@ -47,7 +47,7 @@ export default function Dashboard() {
             {CARDS.map((c) => (
               <button
                 key={c.key} className="kpi tap"
-                onClick={() => navigate(`/admin/tickets?status=${c.status}${orgId ? `&organization_id=${orgId}` : ''}`)}
+                onClick={() => navigate(`/tickets?status=${c.status}${orgId ? `&organization_id=${orgId}` : ''}`)}
               >
                 <div className="label">{c.label}</div>
                 <div className="value">{data.counts[c.key]}</div>

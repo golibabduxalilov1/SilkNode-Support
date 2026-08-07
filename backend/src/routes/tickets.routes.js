@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { CATEGORIES, PRIORITIES, STATUSES, config } from '../config.js';
-import { requireAuth, requireStaff, isStaff } from '../middleware/auth.js';
+import { requireAuth, requireStaff, requirePhoneVerified, isStaff } from '../middleware/auth.js';
 import { upload, verifyUploadedFiles } from '../middleware/upload.js';
 import { exportTicketsXlsx } from '../services/analytics.service.js';
 import {
@@ -11,6 +11,10 @@ import {
 
 export const ticketsRouter = Router();
 ticketsRouter.use(requireAuth);
+// Oddiy foydalanuvchi telefon raqamini tasdiqlamaguncha murojaatlar bilan bog'liq
+// hech qanday amalni bajara olmaydi (ko'rish, yaratish va h.k.). Xodimlar/administrator
+// bundan mustasno — buni requirePhoneVerified o'zi hisobga oladi.
+ticketsRouter.use(requirePhoneVerified);
 
 /** Murojaatga kirish huquqi: muallif yoki texnik xodim */
 async function loadTicket(req, res, next) {
@@ -51,11 +55,6 @@ ticketsRouter.get('/', async (req, res, next) => {
 
 ticketsRouter.post('/', upload.array('files', config.maxFilesPerTicket), verifyUploadedFiles, async (req, res, next) => {
   try {
-    if (!req.user.phone) {
-      return res.status(403).json({
-        error: "Murojaat yuborishdan oldin telefon raqamingizni tasdiqlang — buning uchun botga /start yuboring va raqamingizni ulashing",
-      });
-    }
     const { organization_id, title, category, priority = 'medium', description } = req.body || {};
     const errors = [];
     if (!organization_id) errors.push('Tashkilot tanlanmadi');

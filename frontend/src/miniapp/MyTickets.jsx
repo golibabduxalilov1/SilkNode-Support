@@ -18,7 +18,7 @@ export default function MyTickets() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => backButton(() => navigate('/app')), [navigate]);
+  useEffect(() => backButton(() => navigate('/')), [navigate]);
 
   useEffect(() => {
     setState('loading');
@@ -55,12 +55,12 @@ export default function MyTickets() {
         <Empty
           title="Murojaat yo'q"
           text="Bu bo'limda hozircha hech narsa yo'q. Muammo yuzaga kelsa, yangi murojaat yuboring."
-          action={<Link className="btn" to="/app/new">Yangi murojaat</Link>}
+          action={<Link className="btn" to="/new">Yangi murojaat</Link>}
         />
       ) : (
         <div className="stack">
           {items.map((t) => (
-            <Link key={t.id} to={`/app/tickets/${t.id}`} className="ticket-card">
+            <Link key={t.id} to={`/tickets/${t.id}`} className="ticket-card">
               <div className="row-between">
                 <span className="mono-num faint">{t.number}</span>
                 <StatusBadge status={t.status} />

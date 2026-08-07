@@ -46,7 +46,7 @@ export default function AdminTicketDetail() {
   return (
     <>
       <div className="page-head">
-        <Link to="/admin/tickets" className="faint">&larr; Murojaatlar ro'yxati</Link>
+        <Link to="/tickets" className="faint">&larr; Murojaatlar ro'yxati</Link>
         <div className="row" style={{ gap: 12, marginTop: 8 }}>
           <span className="mono-num muted">{ticket.number}</span>
           <StatusBadge status={ticket.status} />

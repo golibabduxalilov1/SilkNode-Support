@@ -19,7 +19,7 @@ export default function NewTicket() {
     organization_id: '', title: '', category: 'erp', priority: 'medium', description: '',
   });
 
-  useEffect(() => backButton(() => navigate('/app')), [navigate]);
+  useEffect(() => backButton(() => navigate('/')), [navigate]);
   useEffect(() => {
     api('/organizations')
       .then((d) => {
@@ -45,7 +45,7 @@ export default function NewTicket() {
       files.forEach((f) => fd.append('files', f));
       const ticket = await api('/tickets', { method: 'POST', form: fd });
       haptic('medium');
-      navigate(`/app/tickets/${ticket.id}`, { replace: true });
+      navigate(`/tickets/${ticket.id}`, { replace: true });
     } catch (err) {
       if (err.status === 403) {
         setPhoneNotConfirmed(true);

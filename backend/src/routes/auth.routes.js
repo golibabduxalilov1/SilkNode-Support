@@ -100,4 +100,5 @@ export const publicUser = (u) => ({
   username: u.username,
   role: u.role,
   telegram_id: u.telegram_id,
+  phone: u.phone || null,
 });

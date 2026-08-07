@@ -281,7 +281,7 @@ export default function Analytics() {
                   <thead><tr><th>№</th><th>Tashkilot</th><th>Mavzu</th><th>Yaratilgan</th></tr></thead>
                   <tbody>
                     {summary.longestOpen.map((t) => (
-                      <tr key={t.id} onClick={() => navigate(`/admin/tickets/${t.id}`)}>
+                      <tr key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
                         <td className="mono-num">{t.number}</td>
                         <td>{t.organization_name}</td>
                         <td className="td-title">{t.title}</td>

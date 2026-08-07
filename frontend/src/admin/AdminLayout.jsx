@@ -30,10 +30,10 @@ export default function AdminLayout() {
           <span>Support Desk</span>
         </div>
         <nav>
-          <NavLink to="/admin" end>Dashboard</NavLink>
-          <NavLink to="/admin/tickets">Murojaatlar</NavLink>
-          <NavLink to="/admin/analytics">Analytics</NavLink>
-          <NavLink to="/admin/organizations">Tashkilotlar</NavLink>
+          <NavLink to="/" end>Dashboard</NavLink>
+          <NavLink to="/tickets">Murojaatlar</NavLink>
+          <NavLink to="/analytics">Analytics</NavLink>
+          <NavLink to="/organizations">Tashkilotlar</NavLink>
         </nav>
         <div className="who">
           {user.fullname}
