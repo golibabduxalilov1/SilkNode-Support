@@ -4,9 +4,14 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview --host"
+    "dev": "npm run dev:miniapp",
+    "dev:miniapp": "vite --host --mode miniapp",
+    "dev:admin": "vite --host --mode admin",
+    "build": "npm run build:miniapp && npm run build:admin",
+    "build:miniapp": "vite build --mode miniapp --outDir dist/miniapp",
+    "build:admin": "vite build --mode admin --outDir dist/admin",
+    "preview:miniapp": "vite preview --host --outDir dist/miniapp --port 5173",
+    "preview:admin": "vite preview --host --outDir dist/admin --port 5174"
   },
   "dependencies": {
     "react": "^18.3.1",
