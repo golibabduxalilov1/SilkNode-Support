@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { Loading, ErrorNote } from '../components/Ui.jsx';
+import { PageHeader, SectionHeader, Select } from '../components/ui/index.js';
 import { CATEGORY, formatMinutes } from '../lib/format.js';
 
 const CARDS = [
@@ -29,16 +30,16 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="page-head row-between">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Xizmat ko'rsatish holati va javob berish tezligi.</p>
-        </div>
-        <select className="select" style={{ width: 220 }} value={orgId} onChange={(e) => setOrgId(e.target.value)}>
-          <option value="">Barcha tashkilotlar</option>
-          {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-        </select>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Xizmat ko'rsatish holati va javob berish tezligi."
+        actions={(
+          <Select style={{ width: 220 }} value={orgId} onChange={(e) => setOrgId(e.target.value)}>
+            <option value="">Barcha tashkilotlar</option>
+            {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+          </Select>
+        )}
+      />
 
       <ErrorNote>{error}</ErrorNote>
       {!data ? <Loading rows={2} /> : (
@@ -72,7 +73,7 @@ export default function Dashboard() {
 
           <div className="detail-grid">
             <div className="side-card">
-              <h3>Kategoriyalar bo'yicha</h3>
+              <SectionHeader title="Kategoriyalar bo'yicha" />
               {data.byCategory.length === 0 && <p className="muted">Ma'lumot yo'q</p>}
               {data.byCategory.map((c) => {
                 const max = Math.max(...data.byCategory.map((x) => x.c));
@@ -91,7 +92,7 @@ export default function Dashboard() {
             </div>
 
             <div className="side-card">
-              <h3>Tashkilotlar</h3>
+              <SectionHeader title="Tashkilotlar" />
               {data.byOrganization.map((o) => (
                 <div className="kv" key={o.name}>
                   <span>{o.name}</span>

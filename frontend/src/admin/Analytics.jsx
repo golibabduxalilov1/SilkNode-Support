@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { api, downloadBlob } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { Loading, ErrorNote } from '../components/Ui.jsx';
+import { PageHeader, Input, Select, Button, SectionHeader } from '../components/ui/index.js';
 import { CATEGORY, formatDate, formatMinutes } from '../lib/format.js';
 
-const STATUS_COLORS = { new: '#24548f', in_progress: '#a2660f', waiting_user: '#6b4e9e', resolved: '#1b7a50', closed: '#5b646f' };
-const BRAND = '#14584f';
+const STATUS_COLORS = { new: '#0369a1', in_progress: '#b45309', waiting_user: '#4f46e5', resolved: '#15803d', closed: '#71717a' };
+const BRAND = '#4f46e5';
+const SUCCESS = '#15803d';
 
 const PERIODS = [
   { key: 'today', label: 'Bugun' },
@@ -94,50 +96,48 @@ export default function Analytics() {
 
   return (
     <>
-      <div className="page-head row-between">
-        <div>
-          <h1>Analytics</h1>
-          <p>Vaqt ko'rsatkichlari, tashkilot va mutaxassislar bo'yicha statistika.</p>
-        </div>
-        {isAdmin && (
-          <button className="btn btn-ghost" onClick={exportXlsx} disabled={exporting}>
+      <PageHeader
+        title="Analytics"
+        description="Vaqt ko'rsatkichlari, tashkilot va mutaxassislar bo'yicha statistika."
+        actions={isAdmin && (
+          <Button variant="outline" loading={exporting} onClick={exportXlsx}>
             {exporting ? 'Tayyorlanmoqda...' : "Excel'ga eksport"}
-          </button>
+          </Button>
         )}
-      </div>
+      />
 
       <div className="toolbar" style={{ flexWrap: 'wrap' }}>
         <div className="row" style={{ gap: 6 }}>
           {PERIODS.map((p) => (
-            <button
-              key={p.key} className={`btn btn-sm ${period === p.key ? '' : 'btn-ghost'}`}
+            <Button
+              key={p.key} variant={period === p.key ? 'accent' : 'outline'} size="sm"
               onClick={() => setPeriod(p.key)}
             >
               {p.label}
-            </button>
+            </Button>
           ))}
         </div>
         {period === 'custom' && (
           <>
-            <input type="date" className="input" style={{ width: 150 }} value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
-            <input type="date" className="input" style={{ width: 150 }} value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
+            <Input type="date" style={{ width: 150 }} value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+            <Input type="date" style={{ width: 150 }} value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
           </>
         )}
         {isAdmin && (
-          <select className="select" style={{ width: 190 }} value={orgId} onChange={(e) => setOrgId(e.target.value)}>
+          <Select style={{ width: 190 }} value={orgId} onChange={(e) => setOrgId(e.target.value)}>
             <option value="">Barcha tashkilotlar</option>
             {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-          </select>
+          </Select>
         )}
-        <select className="select" style={{ width: 190 }} value={category} onChange={(e) => setCategory(e.target.value)}>
+        <Select style={{ width: 190 }} value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">Barcha kategoriyalar</option>
           {Object.entries(CATEGORY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        </Select>
         {isAdmin && (
-          <select className="select" style={{ width: 190 }} value={agentId} onChange={(e) => setAgentId(e.target.value)}>
+          <Select style={{ width: 190 }} value={agentId} onChange={(e) => setAgentId(e.target.value)}>
             <option value="">Barcha mutaxassislar</option>
             {staff.map((s) => <option key={s.id} value={s.id}>{s.fullname}</option>)}
-          </select>
+          </Select>
         )}
       </div>
 
@@ -169,7 +169,7 @@ export default function Analytics() {
 
           <div className="detail-grid">
             <div className="side-card" style={{ minHeight: 300 }}>
-              <h3>Vaqt bo'yicha trend</h3>
+              <SectionHeader title="Vaqt bo'yicha trend" />
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={summary.trend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--line-soft)" />
@@ -178,13 +178,13 @@ export default function Analytics() {
                   <Tooltip labelFormatter={(d) => formatDate(d, false)} />
                   <Legend />
                   <Line type="monotone" dataKey="created" name="Yaratilgan" stroke={BRAND} strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="closed" name="Yopilgan" stroke="#1b7a50" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="closed" name="Yopilgan" stroke={SUCCESS} strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
 
             <div className="side-card" style={{ minHeight: 300 }}>
-              <h3>Ochiq murojaatlar — status bo'yicha</h3>
+              <SectionHeader title="Ochiq murojaatlar — status bo'yicha" />
               {pieData.length === 0 ? <p className="muted">Ochiq murojaat yo'q</p> : (
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
@@ -202,7 +202,7 @@ export default function Analytics() {
           {isAdmin && (
             <div className="detail-grid">
               <div className="side-card" style={{ minHeight: 300 }}>
-                <h3>Tashkilotlar bo'yicha (jami murojaat)</h3>
+                <SectionHeader title="Tashkilotlar bo'yicha (jami murojaat)" />
                 {!orgStats || orgStats.length === 0 ? <p className="muted">Ma'lumot yo'q</p> : (
                   <ResponsiveContainer width="100%" height={Math.max(200, orgStats.length * 36)}>
                     <BarChart data={orgStats} layout="vertical" margin={{ left: 24 }}>
@@ -217,7 +217,7 @@ export default function Analytics() {
               </div>
 
               <div className="side-card" style={{ minHeight: 300 }}>
-                <h3>Mutaxassislar bo'yicha (yopilgan tiketlar)</h3>
+                <SectionHeader title="Mutaxassislar bo'yicha (yopilgan tiketlar)" />
                 {!agentStats || agentStats.length === 0 ? <p className="muted">Ma'lumot yo'q</p> : (
                   <ResponsiveContainer width="100%" height={Math.max(200, agentStats.length * 36)}>
                     <BarChart data={agentStats} layout="vertical" margin={{ left: 24 }}>
@@ -225,7 +225,7 @@ export default function Analytics() {
                       <XAxis type="number" allowDecimals={false} fontSize={12} />
                       <YAxis type="category" dataKey="fullname" width={140} fontSize={12} />
                       <Tooltip />
-                      <Bar dataKey="closedCount" name="Yopilgan" fill="#1b7a50" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="closedCount" name="Yopilgan" fill={SUCCESS} radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -235,7 +235,7 @@ export default function Analytics() {
 
           <div className="detail-grid">
             <div className="side-card">
-              <h3>Kategoriya bo'yicha</h3>
+              <SectionHeader title="Kategoriya bo'yicha" />
               {summary.byCategory.length === 0 && <p className="muted">Ma'lumot yo'q</p>}
               {summary.byCategory.map((c) => {
                 const max = Math.max(...summary.byCategory.map((x) => x.count));
@@ -254,7 +254,7 @@ export default function Analytics() {
             </div>
 
             <div className="side-card">
-              <h3>Muhimlik darajasi bo'yicha</h3>
+              <SectionHeader title="Muhimlik darajasi bo'yicha" />
               {summary.byPriority.length === 0 && <p className="muted">Ma'lumot yo'q</p>}
               {summary.byPriority.map((c) => {
                 const max = Math.max(...summary.byPriority.map((x) => x.count));
@@ -274,7 +274,7 @@ export default function Analytics() {
           </div>
 
           <div className="side-card">
-            <h3>Eng uzoq ochiq turgan murojaatlar</h3>
+            <SectionHeader title="Eng uzoq ochiq turgan murojaatlar" />
             {summary.longestOpen.length === 0 ? <p className="muted">Ochiq murojaat yo'q</p> : (
               <div className="table-wrap">
                 <table className="data">

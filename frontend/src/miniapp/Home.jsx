@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { haptic } from '../lib/telegram.js';
@@ -34,7 +35,7 @@ export default function Home() {
             <strong>Yangi murojaat</strong>
             <div className="faint">Muammoni tavsiflang va fayl biriktiring</div>
           </span>
-          <span className="arrow" aria-hidden>&rarr;</span>
+          <span className="arrow" aria-hidden><ChevronRight size={20} strokeWidth={1.75} /></span>
         </button>
 
         <button className="tile" onClick={() => go('/tickets')}>
@@ -42,7 +43,7 @@ export default function Home() {
             <strong>Mening murojaatlarim</strong>
             <div className="faint">Holat, javoblar va suhbat tarixi</div>
           </span>
-          <span className="arrow" aria-hidden>&rarr;</span>
+          <span className="arrow" aria-hidden><ChevronRight size={20} strokeWidth={1.75} /></span>
         </button>
       </div>
 

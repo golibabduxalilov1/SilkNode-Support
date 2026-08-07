@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import { api, downloadBlob } from '../lib/api.js';
 import { StatusBadge, PriorityBadge, MultiSelect, SortHeader, Loading, Empty, ErrorNote } from '../components/Ui.jsx';
+import { PageHeader, Button, Input } from '../components/ui/index.js';
 import { CATEGORY, STATUS, formatDate, timeAgo } from '../lib/format.js';
 
 export default function TicketsList() {
@@ -60,19 +62,19 @@ export default function TicketsList() {
 
   return (
     <>
-      <div className="page-head row-between">
-        <div>
-          <h1>Murojaatlar</h1>
-          <p>{data ? `${data.total} ta murojaat topildi` : 'Yuklanmoqda'}</p>
-        </div>
-        <button className="btn btn-ghost" onClick={exportXlsx} disabled={exporting}>
-          {exporting ? 'Tayyorlanmoqda...' : "Excel'ga eksport"}
-        </button>
-      </div>
+      <PageHeader
+        title="Murojaatlar"
+        description={data ? `${data.total} ta murojaat topildi` : 'Yuklanmoqda'}
+        actions={(
+          <Button variant="outline" iconLeft={Download} loading={exporting} onClick={exportXlsx}>
+            {exporting ? 'Tayyorlanmoqda...' : "Excel'ga eksport"}
+          </Button>
+        )}
+      />
 
       <div className="toolbar" style={{ flexWrap: 'wrap' }}>
-        <input
-          className="input grow" placeholder="Raqam, mavzu yoki matn bo'yicha qidirish"
+        <Input
+          className="grow" placeholder="Raqam, mavzu yoki matn bo'yicha qidirish"
           defaultValue={get('q')}
           onKeyDown={(e) => e.key === 'Enter' && setParam('q', e.target.value.trim())}
         />
@@ -144,9 +146,9 @@ export default function TicketsList() {
 
           {pages > 1 && (
             <div className="row" style={{ marginTop: 14, gap: 8 }}>
-              <button className="btn btn-ghost btn-sm" disabled={page <= 1} onClick={() => setParams(prev(params, page - 1))}>Oldingi</button>
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setParams(prev(params, page - 1))}>Oldingi</Button>
               <span className="faint">{page} / {pages}</span>
-              <button className="btn btn-ghost btn-sm" disabled={page >= pages} onClick={() => setParams(prev(params, page + 1))}>Keyingi</button>
+              <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => setParams(prev(params, page + 1))}>Keyingi</Button>
             </div>
           )}
         </>

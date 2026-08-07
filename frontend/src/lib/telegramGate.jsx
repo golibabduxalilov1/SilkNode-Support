@@ -28,6 +28,11 @@ const RELOAD_FLAG = 'tg-gate-reloaded';
  * kosmetik himoya — asosiy tekshiruv backend'da initData imzosini tasdiqlash
  * orqali amalga oshiriladi.
  */
+function retry() {
+  sessionStorage.removeItem(RELOAD_FLAG);
+  window.location.reload();
+}
+
 export default function TelegramGate({ children }) {
   const [state, setState] = useState(DEV_BYPASS ? 'ok' : 'checking');
 
@@ -56,15 +61,40 @@ export default function TelegramGate({ children }) {
         return;
       }
 
-      // initData baribir topilmadi, lekin bu faqat kosmetik tekshiruv edi —
-      // haqiqiy tasdiqlash backend'da initData HMAC imzosi orqali amalga oshadi,
-      // shuning uchun bu yerda ilovani bloklamaymiz.
+      // tg obyekti bor-u, reload'dan keyin ham initData hamon bo'sh — avtomatik
+      // choralar tugadi. Bu holatda jim "ok"ga o'tib davom etish o'rniga
+      // foydalanuvchiga aniq, harakatga undovchi xabar ko'rsatamiz, chunki
+      // shu yerdan o'tib ketilsa, keyingi qadam (auth.jsx) baribir xom backend
+      // xatosiga olib keladi.
+      if (tg) {
+        setState('blocked');
+        return;
+      }
+
+      // tg obyektining o'zi umuman topilmadi (Telegram tashqarisida ochilgan
+      // bo'lishi mumkin) — bu faqat kosmetik tekshiruv, haqiqiy tasdiqlash
+      // backend'da initData HMAC imzosi orqali amalga oshadi, shuning uchun
+      // bu holatda ilovani bloklamaymiz.
       setState('ok');
     })();
     return () => { cancelled = true; };
   }, []);
 
   if (state === 'checking') return null;
+
+  if (state === 'blocked') {
+    return (
+      <div className="tg-block">
+        <div className="tg-block-card">
+          <h1>Ilova ochilmadi</h1>
+          <p className="muted">
+            Telegram ma'lumotlarini yuklab bo'lmadi. Botni to'liq yoping va qaytadan oching.
+          </p>
+          <button type="button" className="btn" onClick={retry}>Qayta urinish</button>
+        </div>
+      </div>
+    );
+  }
 
   return children;
 }

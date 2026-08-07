@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { StatusBadge, PriorityBadge, Attachments, Loading, ErrorNote } from '../components/Ui.jsx';
+import { Field, Select, TextArea, Button, SectionHeader } from '../components/ui/index.js';
 import { CATEGORY, STATUS, formatDate, formatMinutes } from '../lib/format.js';
 import FilePicker from '../components/FilePicker.jsx';
 
@@ -46,7 +48,9 @@ export default function AdminTicketDetail() {
   return (
     <>
       <div className="page-head">
-        <Link to="/tickets" className="faint">&larr; Murojaatlar ro'yxati</Link>
+        <Link to="/tickets" className="faint row" style={{ gap: 4, display: 'inline-flex' }}>
+          <ArrowLeft size={14} strokeWidth={1.75} /> Murojaatlar ro'yxati
+        </Link>
         <div className="row" style={{ gap: 12, marginTop: 8 }}>
           <span className="mono-num muted">{ticket.number}</span>
           <StatusBadge status={ticket.status} />
@@ -84,15 +88,15 @@ export default function AdminTicketDetail() {
           </div>
 
           <div className="card stack">
-            <textarea
-              className="textarea" value={text} onChange={(e) => setText(e.target.value)}
+            <TextArea
+              value={text} onChange={(e) => setText(e.target.value)}
               placeholder="Foydalanuvchiga javob yozing. Javob yuborilganda unga Telegram orqali bildirishnoma boradi."
             />
             <FilePicker files={files} onChange={setFiles} max={3} />
             <div className="row" style={{ gap: 10 }}>
-              <button className="btn" onClick={reply} disabled={busy}>{busy ? 'Yuborilmoqda...' : 'Javob yuborish'}</button>
+              <Button loading={busy} onClick={reply}>{busy ? 'Yuborilmoqda...' : 'Javob yuborish'}</Button>
               {ticket.status !== 'resolved' && (
-                <button className="btn btn-ghost" onClick={() => update('status', { status: 'resolved' })}>Hal qilindi deb belgilash</button>
+                <Button variant="outline" onClick={() => update('status', { status: 'resolved' })}>Hal qilindi deb belgilash</Button>
               )}
             </div>
           </div>
@@ -100,27 +104,25 @@ export default function AdminTicketDetail() {
 
         <div className="stack" style={{ gap: 16 }}>
           <div className="side-card">
-            <h3>Boshqaruv</h3>
-            <div className="field" style={{ marginBottom: 12 }}>
-              <label htmlFor="st">Status</label>
-              <select id="st" className="select" value={ticket.status} onChange={(e) => update('status', { status: e.target.value })}>
+            <SectionHeader title="Boshqaruv" />
+            <Field label="Status" htmlFor="st" className="mb-3">
+              <Select id="st" value={ticket.status} onChange={(e) => update('status', { status: e.target.value })}>
                 {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="as">Mas'ul</label>
-              <select
-                id="as" className="select" value={ticket.assigned_to || ''}
+              </Select>
+            </Field>
+            <Field label="Mas'ul" htmlFor="as">
+              <Select
+                id="as" value={ticket.assigned_to || ''}
                 onChange={(e) => update('assign', { assigned_to: e.target.value || null })}
               >
                 <option value="">Tayinlanmagan</option>
                 {staff.map((s) => <option key={s.id} value={s.id}>{s.fullname}</option>)}
-              </select>
-            </div>
+              </Select>
+            </Field>
           </div>
 
           <div className="side-card">
-            <h3>Ma'lumotlar</h3>
+            <SectionHeader title="Ma'lumotlar" />
             <div className="kv"><span>Tashkilot</span><span>{ticket.organization_name}</span></div>
             <div className="kv"><span>Foydalanuvchi</span><span>{ticket.author_name}</span></div>
             <div className="kv"><span>Kategoriya</span><span>{CATEGORY[ticket.category]}</span></div>
@@ -130,7 +132,7 @@ export default function AdminTicketDetail() {
           </div>
 
           <div className="side-card">
-            <h3>Vaqt ko'rsatkichlari</h3>
+            <SectionHeader title="Vaqt ko'rsatkichlari" />
             <div className="kv"><span>Birinchi javobgacha</span><span>{formatMinutes(ticket.first_response_minutes)}</span></div>
             <div className="kv"><span>Umumiy bajarish</span><span>{formatMinutes(ticket.resolution_minutes)}</span></div>
             <div className="kv"><span>Foydalanuvchini kutish</span><span>{formatMinutes(ticket.waiting_on_user_minutes)}</span></div>

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { backButton, haptic } from '../lib/telegram.js';
 import { StatusBadge, PriorityBadge, Attachments, Loading, ErrorNote } from '../components/Ui.jsx';
+import { TextArea, Button } from '../components/ui/index.js';
 import { CATEGORY, formatDate, formatMinutes } from '../lib/format.js';
 import FilePicker from '../components/FilePicker.jsx';
 
@@ -113,8 +114,8 @@ export default function TicketDetail() {
         <div className="card" style={{ textAlign: 'center', marginBottom: 16 }}>
           <p style={{ margin: '0 0 12px' }}>Mutaxassis muammoni hal qilingan deb belgiladi.<br />Muammo hal bo'ldimi?</p>
           <div className="row" style={{ gap: 10 }}>
-            <button className="btn" style={{ flex: 1 }} onClick={() => confirmResolution('closed')}>Ha, hal bo'ldi</button>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => confirmResolution('in_progress')}>Yo'q, hal bo'lmadi</button>
+            <Button style={{ flex: 1 }} onClick={() => confirmResolution('closed')}>Ha, hal bo'ldi</Button>
+            <Button variant="outline" style={{ flex: 1 }} onClick={() => confirmResolution('in_progress')}>Yo'q, hal bo'lmadi</Button>
           </div>
         </div>
       )}
@@ -125,14 +126,14 @@ export default function TicketDetail() {
         </div>
       ) : (
         <div className="composer stack">
-          <textarea
-            className="textarea" style={{ minHeight: 80 }} value={text} onChange={(e) => setText(e.target.value)}
+          <TextArea
+            style={{ minHeight: 80 }} value={text} onChange={(e) => setText(e.target.value)}
             placeholder="Javob yozing yoki qo'shimcha ma'lumot bering"
           />
           <FilePicker files={files} onChange={setFiles} max={3} />
-          <button className="btn btn-block" onClick={send} disabled={sending}>
+          <Button fullWidth loading={sending} onClick={send}>
             {sending ? 'Yuborilmoqda...' : 'Yuborish'}
-          </button>
+          </Button>
         </div>
       )}
     </>

@@ -33,13 +33,15 @@ export function parseInitData(initData) {
 /**
  * @param {object} [options]
  * @param {Array<Array<{text:string, callback_data:string}>>} [options.buttons] - "Ko'rish" tugmasidan oldin qo'shiladigan qo'shimcha tugma qatorlari (masalan, Ha/Yo'q tasdiqlash)
+ * @param {boolean} [options.admin] - true bo'lsa, tugma mini-app o'rniga admin panelga (config.adminUrl) ochiladi
  */
 export async function sendTelegramMessage(telegramId, text, ticketId, options = {}) {
   if (!config.botToken || !telegramId) return;
   const keyboard = [...(options.buttons || [])];
   if (ticketId) {
+    const baseUrl = options.admin ? config.adminUrl : config.miniAppUrl;
     keyboard.push([
-      { text: 'Murojaatni ochish', web_app: { url: `${config.miniAppUrl}?ticket=${ticketId}&ts=${Date.now()}` } },
+      { text: 'Murojaatni ochish', web_app: { url: `${baseUrl}?ticket=${ticketId}&ts=${Date.now()}` } },
     ]);
   }
   const body = {

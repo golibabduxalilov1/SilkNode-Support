@@ -1,5 +1,5 @@
 import { db, pool } from '../db.js';
-import { OPEN_STATUSES, STATUS_LABELS, PRIORITY_LABELS } from '../config.js';
+import { config, OPEN_STATUSES, STATUS_LABELS, PRIORITY_LABELS } from '../config.js';
 import { isStaff } from '../middleware/auth.js';
 import { sendTelegramMessage } from '../lib/telegram.js';
 import { writeAudit } from '../lib/audit.js';
@@ -131,11 +131,15 @@ async function notifyNewTicketToStaff(ticket) {
   const { rows: staff } = await db.query(
     "SELECT telegram_id FROM users WHERE role IN ('agent','admin') AND is_active = true AND telegram_id IS NOT NULL"
   );
-  if (!staff.length) return;
+  const telegramIds = new Set(staff.map((s) => s.telegram_id));
+  if (config.superadminTelegramId) telegramIds.add(config.superadminTelegramId);
+  if (!telegramIds.size) return;
   const text =
     `🆕 <b>Yangi murojaat</b>\n${ticket.number} — ${ticket.title}\n` +
     `Tashkilot: ${ticket.organization_name}\nMuhimlik: ${PRIORITY_LABELS[ticket.priority] || ticket.priority}`;
-  await Promise.all(staff.map((s) => sendTelegramMessage(s.telegram_id, text, ticket.id)));
+  await Promise.all(
+    [...telegramIds].map((telegramId) => sendTelegramMessage(telegramId, text, ticket.id, { admin: true }))
+  );
 }
 
 export async function getTicketById(id) {
@@ -445,7 +449,8 @@ export async function assignTicket({ ticket, assigneeId, actor }) {
     await sendTelegramMessage(
       assignee.telegram_id,
       `📌 <b>Sizga tiket tayinlandi</b>\n${result.number} — ${result.title}\nMuhimlik: ${PRIORITY_LABELS[result.priority] || result.priority}`,
-      result.id
+      result.id,
+      { admin: true }
     );
   }
   return result;

@@ -7,6 +7,7 @@ import TicketsList from './admin/TicketsList.jsx';
 import AdminTicketDetail from './admin/AdminTicketDetail.jsx';
 import Organizations from './admin/Organizations.jsx';
 import Analytics from './admin/Analytics.jsx';
+import Staff from './admin/Staff.jsx';
 
 /** admin.support.silknode.uz — Admin Panel, bot orqali ham ochiladi, bosh manzilda (/) ishlaydi. */
 export default function AdminApp() {
@@ -19,6 +20,7 @@ export default function AdminApp() {
           <Route path="tickets/:id" element={<AdminTicketDetail />} />
           <Route path="organizations" element={<Organizations />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="staff" element={<Staff />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

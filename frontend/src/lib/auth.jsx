@@ -15,6 +15,17 @@ export function AuthProvider({ scope, children }) {
     try {
       const tg = await waitForTg();
       const initData = tg?.initData;
+
+      // devUser fallback faqat `vite dev`da ishlaydi (import.meta.env.DEV production
+      // build'da har doim false). Production'da initData topilmasa, backendga so'rov
+      // umuman yuborilmaydi — aks holda u baribir rad etilib, foydalanuvchiga xom
+      // backend xatosi ko'rsatiladi. Buning o'rniga aniq, harakatga undovchi xabar beramiz.
+      if (!initData && !import.meta.env.DEV) {
+        setError("Telegram ma'lumotlari topilmadi. Ilovani to'liq yoping va botdan qaytadan oching.");
+        setStatus('error');
+        return;
+      }
+
       const payload = initData
         ? { initData }
         : { devUser: { id: 555001, first_name: 'Test', last_name: 'Foydalanuvchi', username: 'test_user' } };

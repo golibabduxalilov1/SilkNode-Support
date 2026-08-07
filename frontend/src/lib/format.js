@@ -1,16 +1,16 @@
 export const STATUS = {
-  new:          { label: 'Yangi',                        color: 'var(--blue)',   bg: 'var(--blue-soft)' },
-  in_progress:  { label: 'Ish jarayonida',               color: 'var(--amber)',  bg: 'var(--amber-soft)' },
-  waiting_user: { label: 'Foydalanuvchi javobi kutilmoqda', color: 'var(--violet)', bg: 'var(--violet-soft)' },
-  resolved:     { label: 'Hal qilindi',                  color: 'var(--green)',  bg: 'var(--green-soft)' },
-  closed:       { label: 'Yopildi',                      color: 'var(--slate)',  bg: 'var(--slate-soft)' },
+  new:          { label: 'Yangi',                        variant: 'informative' },
+  in_progress:  { label: 'Ish jarayonida',               variant: 'caution' },
+  waiting_user: { label: 'Foydalanuvchi javobi kutilmoqda', variant: 'accent' },
+  resolved:     { label: 'Hal qilindi',                  variant: 'positive' },
+  closed:       { label: 'Yopildi',                      variant: 'neutral' },
 };
 
 export const PRIORITY = {
-  low:      { label: 'Past',      color: 'var(--slate)' },
-  medium:   { label: "O'rtacha",  color: 'var(--blue)' },
-  high:     { label: 'Yuqori',    color: 'var(--amber)' },
-  critical: { label: 'Kritik',    color: 'var(--red)' },
+  low:      { label: 'Past',      variant: 'neutral' },
+  medium:   { label: "O'rtacha",  variant: 'informative' },
+  high:     { label: 'Yuqori',    variant: 'caution' },
+  critical: { label: 'Kritik',    variant: 'critical' },
 };
 
 export const CATEGORY = {

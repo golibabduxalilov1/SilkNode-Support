@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { backButton } from '../lib/telegram.js';
 import { StatusBadge, Loading, Empty, ErrorNote } from '../components/Ui.jsx';
+import { Button } from '../components/ui/index.js';
 import { formatDate, CATEGORY } from '../lib/format.js';
 
 const FILTERS = [
@@ -37,13 +38,12 @@ export default function MyTickets() {
 
       <div className="row" style={{ marginBottom: 14, gap: 8 }}>
         {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            className={`btn btn-sm ${filter === f.key ? '' : 'btn-ghost'}`}
+          <Button
+            key={f.key} size="sm" variant={filter === f.key ? 'accent' : 'outline'}
             onClick={() => setFilter(f.key)}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

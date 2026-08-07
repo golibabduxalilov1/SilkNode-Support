@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { STATUS, PRIORITY, bytes } from '../lib/format.js';
 import { downloadFile } from '../lib/api.js';
+import StatusTag from './ui/StatusTag.jsx';
+import { SkeletonStack } from './ui/Skeleton.jsx';
+import EmptyState from './ui/EmptyState.jsx';
 
 /** Checkbox-panel ko'rinishidagi ko'p-tanlovli filtr (org/kategoriya/status/mas'ul kabi ustunlar uchun). */
 export function MultiSelect({ label, options, values, onChange, width = 190 }) {
@@ -24,14 +28,15 @@ export function MultiSelect({ label, options, values, onChange, width = 190 }) {
 
   return (
     <div className="multiselect" ref={ref} style={{ width }}>
-      <button type="button" className="select multiselect-trigger" onClick={() => setOpen((o) => !o)}>
-        {summary}
+      <button type="button" className="select multiselect-trigger row-between" onClick={() => setOpen((o) => !o)}>
+        <span>{summary}</span>
+        <ChevronDown size={16} className="faint" aria-hidden />
       </button>
       {open && (
         <div className="multiselect-panel">
           {options.map((o) => (
             <label key={o.value} className="multiselect-option">
-              <input type="checkbox" checked={values.includes(o.value)} onChange={() => toggle(o.value)} />
+              <input type="checkbox" className="checkbox" checked={values.includes(o.value)} onChange={() => toggle(o.value)} />
               {o.label}
             </label>
           ))}
@@ -48,28 +53,20 @@ export function MultiSelect({ label, options, values, onChange, width = 190 }) {
 export function SortHeader({ label, column, sortBy, sortDir, onSort }) {
   const active = sortBy === column;
   return (
-    <th onClick={() => onSort(column)} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>
+    <th onClick={() => onSort(column)} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} aria-sort={active ? (sortDir === 'desc' ? 'descending' : 'ascending') : 'none'}>
       {label}{active && <span style={{ marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>}
     </th>
   );
 }
 
 export function StatusBadge({ status }) {
-  const s = STATUS[status] || { label: status, color: 'var(--slate)', bg: 'var(--slate-soft)' };
-  return (
-    <span className="badge" style={{ color: s.color, background: s.bg }}>
-      <span className="dot" style={{ background: s.color }} /> {s.label}
-    </span>
-  );
+  const s = STATUS[status] || { label: status, variant: 'neutral' };
+  return <StatusTag variant={s.variant}>{s.label}</StatusTag>;
 }
 
 export function PriorityBadge({ priority }) {
-  const p = PRIORITY[priority] || { label: priority, color: 'var(--slate)' };
-  return (
-    <span className="row" style={{ gap: 6, fontSize: 13, color: p.color, fontWeight: 600 }}>
-      <span className="dot" style={{ background: p.color }} /> {p.label}
-    </span>
-  );
+  const p = PRIORITY[priority] || { label: priority, variant: 'neutral' };
+  return <StatusTag variant={p.variant}>{p.label}</StatusTag>;
 }
 
 export function Attachments({ items = [] }) {
@@ -86,21 +83,11 @@ export function Attachments({ items = [] }) {
 }
 
 export function Empty({ title, text, action }) {
-  return (
-    <div className="empty">
-      <h3>{title}</h3>
-      <p className="muted" style={{ marginTop: 0 }}>{text}</p>
-      {action}
-    </div>
-  );
+  return <EmptyState title={title} description={text} action={action} />;
 }
 
 export function Loading({ rows = 3 }) {
-  return (
-    <div className="stack" aria-busy="true" aria-label="Yuklanmoqda">
-      {Array.from({ length: rows }).map((_, i) => <div key={i} className="skeleton" />)}
-    </div>
-  );
+  return <SkeletonStack rows={rows} />;
 }
 
 export function ErrorNote({ children }) {

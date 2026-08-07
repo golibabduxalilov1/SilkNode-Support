@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth.jsx';
 import { ErrorNote } from '../components/Ui.jsx';
+import { Field, Input } from '../components/ui/Field.jsx';
+import Button from '../components/ui/Button.jsx';
 
 export default function Login() {
   const { loginWithPassword, error: authError } = useAuth();
@@ -25,19 +27,17 @@ export default function Login() {
 
         <ErrorNote>{error || authError}</ErrorNote>
 
-        <div className="field">
-          <label htmlFor="u">Login</label>
-          <input id="u" className="input" autoComplete="username" value={form.username}
+        <Field label="Login" htmlFor="u">
+          <Input id="u" autoComplete="username" value={form.username}
                  onChange={(e) => setForm({ ...form, username: e.target.value })} />
-        </div>
+        </Field>
 
-        <div className="field">
-          <label htmlFor="p">Parol</label>
-          <input id="p" type="password" className="input" autoComplete="current-password" value={form.password}
+        <Field label="Parol" htmlFor="p">
+          <Input id="p" type="password" autoComplete="current-password" value={form.password}
                  onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        </div>
+        </Field>
 
-        <button className="btn btn-block" disabled={busy}>{busy ? 'Tekshirilmoqda...' : 'Kirish'}</button>
+        <Button type="submit" fullWidth loading={busy}>{busy ? 'Tekshirilmoqda...' : 'Kirish'}</Button>
       </form>
     </div>
   );
